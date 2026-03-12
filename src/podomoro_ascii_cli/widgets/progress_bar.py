@@ -9,9 +9,7 @@ class SessionProgressBar(TextualProgressBar):
 
     DEFAULT_CSS = """
     SessionProgressBar {
-        width: 80%;
         height: auto;
-        margin: 1 0;
     }
 
     SessionProgressBar > .bar {
@@ -27,7 +25,7 @@ class SessionProgressBar(TextualProgressBar):
 
     def __init__(self) -> None:
         """Initialize the progress bar."""
-        super().__init__()
+        super().__init__(show_eta=False)
         self._total_seconds = 0
         self._elapsed_seconds = 0
 

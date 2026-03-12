@@ -19,7 +19,6 @@ readme = "README.md"
 requires-python = ">=3.12,<4.0"
 dependencies = [
     "textual (>=8.1.0,<9.0.0)",
-    "textual-dev (>=1.8.0,<2.0.0)",
     "pyfiglet (>=1.0.4,<2.0.0)",
     "notify-py (>=0.3.43,<0.4.0)"
 ]
@@ -37,5 +36,21 @@ build-backend = "poetry.core.masonry.api"
 [dependency-groups]
 dev = [
     "pytest (>=9.0.2,<10.0.0)",
-    "pytest-cov (>=7.0.0,<8.0.0)"
+    "pytest-cov (>=7.0.0,<8.0.0)",
+    "pylint (>=3.3.0,<4.0.0)",
+    "textual-dev (>=1.8.0,<2.0.0)",
 ]
+
+[tool.pylint.messages_control]
+disable = [
+    "R0903",  # too-few-public-methods (Textual widgets often have few)
+    "C0114",  # missing-module-docstring
+    "C0115",  # missing-class-docstring
+    "C0116",  # missing-function-docstring (you have docstrings, but pylint is strict)
+]
+
+[tool.pylint.basic]
+good-names = ["i", "j", "k", "ex", "Run", "_", "id", "x", "y", "e"]
+
+[tool.pylint.typecheck]
+generated-members = ["textual.*"]

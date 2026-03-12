@@ -6,9 +6,9 @@ from pathlib import Path
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Center, Middle, Vertical
+from textual.containers import Center, Vertical
 from textual.timer import Timer as TextualTimer
-from textual.widgets import Footer, Header
+from textual.widgets import Button, Footer, Header
 
 from podomoro_ascii_cli.core import (
     Session,
@@ -17,6 +17,7 @@ from podomoro_ascii_cli.core import (
     save_settings,
     send_notification,
 )
+from podomoro_ascii_cli.core.timer import Timer
 from podomoro_ascii_cli.widgets import (
     ASCIITimer,
     ControlButtons,
@@ -113,7 +114,7 @@ class PodomoroApp(App):
                 progress_bar.set_elapsed(self._timer.elapsed_seconds)
                 yield progress_bar
 
-            with Center(id="controls-section"):
+            with Vertical(id="controls-section"):
                 yield ControlButtons()
 
             with Center(id="settings-section"):
@@ -222,7 +223,7 @@ class PodomoroApp(App):
         settings_panel = self.query_one(SettingsPanel)
         settings_panel.toggle()
 
-    def on_button_pressed(self, event: "Button.Pressed") -> None:
+    def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button presses."""
         button_id = event.button.id
 
