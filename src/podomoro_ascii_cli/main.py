@@ -24,6 +24,7 @@ from podomoro_ascii_cli.widgets import (
     SessionLabel,
     SessionProgressBar,
     SettingsPanel,
+    TotalWorkCounter,
 )
 
 
@@ -113,6 +114,7 @@ class PodomoroApp(App):
                 progress_bar.set_total(self._timer.total_seconds)
                 progress_bar.set_elapsed(self._timer.elapsed_seconds)
                 yield progress_bar
+                yield TotalWorkCounter()
 
             with Vertical(id="controls-section"):
                 yield ControlButtons()
@@ -136,6 +138,9 @@ class PodomoroApp(App):
             finished = self._timer.tick()
             self._update_timer_display()
             self._update_progress_bar()
+
+            if self._session.session_type == SessionType.WORK:
+                self.query_one(TotalWorkCounter).increment()
 
             if finished:
                 self._on_timer_finished()
@@ -214,6 +219,9 @@ class PodomoroApp(App):
         # Reset timer with new work duration
         self._reset_timer_for_new_session()
         self._update_session_display()
+
+        # Reset total work counter
+        self.query_one(TotalWorkCounter).reset()
 
         controls = self.query_one(ControlButtons)
         controls.set_stopped()
