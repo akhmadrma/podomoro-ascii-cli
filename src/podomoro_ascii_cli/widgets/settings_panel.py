@@ -1,62 +1,69 @@
 """
-Settings panel for configuring timer durations.
+Settings screen for configuring timer durations.
 """
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
-from textual.widgets import Button, Input, Label, Static
+from textual.binding import Binding
+from textual.containers import Center, Horizontal, Vertical
+from textual.screen import Screen
+from textual.widgets import Button, Footer, Header, Input, Label
 
 
-class SettingsPanel(Static):
-    """Panel for configuring timer settings."""
+class SettingsScreen(Screen[dict | None]):
+    """Full-screen settings for configuring timer settings."""
 
     DEFAULT_CSS = """
-    SettingsPanel {
-        width: 100%;
+    SettingsScreen {
+        align: center middle;
+    }
+
+    #settings-container {
+        width: 60;
         height: auto;
         background: $surface;
-        border: solid white;
-        padding: 1;
-        display: none;
+        border: solid $primary;
+        padding: 2 4;
     }
 
-    SettingsPanel.visible {
-        display: block;
+    #settings-title {
+        text-align: center;
+        text-style: bold;
+        color: $primary;
+        width: 100%;
+        margin-bottom: 1;
     }
 
-    SettingsPanel Label {
+    SettingsScreen Label {
         color: white;
-        width: 30;
+        width: 32;
     }
 
-    SettingsPanel Input {
+    SettingsScreen Input {
         width: 10;
     }
 
-    SettingsPanel Horizontal {
+    SettingsScreen Horizontal {
         height: auto;
         margin: 1 0;
     }
 
-    SettingsPanel #settings-title {
-        text-align: center;
-        text-style: bold;
-        color: white;
+    #button-row {
+        height: auto;
+        margin-top: 2;
+        align: center middle;
     }
 
-    SettingsPanel #save-btn {
-        color: white;
-        background: $success;
-    }
-
-    SettingsPanel #cancel-btn {
-        color: white;
-        background: $primary;
+    #save-btn {
+        margin-right: 2;
     }
     """
 
+    BINDINGS = [
+        Binding("escape", "save_and_exit", "Save & Exit"),
+    ]
+
     def __init__(self, settings: dict | None = None) -> None:
         """
-        Initialize the settings panel.
+        Initialize the settings screen.
 
         Args:
             settings: Dictionary containing current settings.
@@ -70,63 +77,50 @@ class SettingsPanel(Static):
         }
 
     def compose(self) -> ComposeResult:
-        """Compose the settings panel."""
-        yield Label("SETTINGS", id="settings-title")
+        """Compose the settings screen."""
+        yield Header()
 
-        with Horizontal():
-            yield Label("Work Duration (min):")
-            yield Input(
-                value=str(self._settings.get("work_duration", 25)),
-                id="work-duration",
-                type="integer",
-            )
+        with Center():
+            with Vertical(id="settings-container"):
+                yield Label("⚙  SETTINGS", id="settings-title")
 
-        with Horizontal():
-            yield Label("Short Break (min):")
-            yield Input(
-                value=str(self._settings.get("short_break_duration", 5)),
-                id="short-break",
-                type="integer",
-            )
+                with Horizontal():
+                    yield Label("Work Duration (min):")
+                    yield Input(
+                        value=str(self._settings.get("work_duration", 25)),
+                        id="work-duration",
+                        type="integer",
+                    )
 
-        with Horizontal():
-            yield Label("Long Break (min):")
-            yield Input(
-                value=str(self._settings.get("long_break_duration", 15)),
-                id="long-break",
-                type="integer",
-            )
+                with Horizontal():
+                    yield Label("Short Break (min):")
+                    yield Input(
+                        value=str(self._settings.get("short_break_duration", 5)),
+                        id="short-break",
+                        type="integer",
+                    )
 
-        with Horizontal():
-            yield Label("Sessions before Long Break:")
-            yield Input(
-                value=str(self._settings.get("sessions_before_long_break", 4)),
-                id="sessions-count",
-                type="integer",
-            )
+                with Horizontal():
+                    yield Label("Long Break (min):")
+                    yield Input(
+                        value=str(self._settings.get("long_break_duration", 15)),
+                        id="long-break",
+                        type="integer",
+                    )
 
-        with Horizontal():
-            yield Button("Save", id="save-btn", variant="success")
-            yield Button("Cancel", id="cancel-btn", variant="primary")
+                with Horizontal():
+                    yield Label("Sessions before Long Break:")
+                    yield Input(
+                        value=str(self._settings.get("sessions_before_long_break", 4)),
+                        id="sessions-count",
+                        type="integer",
+                    )
 
-    def show(self) -> None:
-        """Show the settings panel."""
-        self.add_class("visible")
+                with Horizontal(id="button-row"):
+                    yield Button("Save", id="save-btn", variant="success")
+                    yield Button("Cancel", id="cancel-btn", variant="default")
 
-    def hide(self) -> None:
-        """Hide the settings panel."""
-        self.remove_class("visible")
-
-    def toggle(self) -> None:
-        """Toggle the visibility of the settings panel."""
-        if self.has_class("visible"):
-            self.hide()
-        else:
-            self.show()
-
-    def is_visible(self) -> bool:
-        """Check if the settings panel is visible."""
-        return self.has_class("visible")
+        yield Footer()
 
     def get_settings(self) -> dict:
         """
@@ -162,16 +156,13 @@ class SettingsPanel(Static):
             "sessions_before_long_break": max(1, sessions_count),
         }
 
-    def update_values(self, settings: dict) -> None:
-        """
-        Update the input field values.
+    def action_save_and_exit(self) -> None:
+        """Save the settings and dismiss the screen."""
+        self.dismiss(self.get_settings())
 
-        Args:
-            settings: Dictionary with new settings values.
-        """
-        self.query_one("#work-duration", Input).value = str(settings.get("work_duration", 25))
-        self.query_one("#short-break", Input).value = str(settings.get("short_break_duration", 5))
-        self.query_one("#long-break", Input).value = str(settings.get("long_break_duration", 15))
-        self.query_one("#sessions-count", Input).value = str(
-            settings.get("sessions_before_long_break", 4)
-        )
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button presses."""
+        if event.button.id == "save-btn":
+            self.dismiss(self.get_settings())
+        elif event.button.id == "cancel-btn":
+            self.dismiss(None)

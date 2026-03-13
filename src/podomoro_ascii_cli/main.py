@@ -23,7 +23,7 @@ from podomoro_ascii_cli.widgets import (
     ControlButtons,
     SessionLabel,
     SessionProgressBar,
-    SettingsPanel,
+    SettingsScreen,
     TotalWorkCounter,
 )
 
@@ -118,9 +118,6 @@ class PodomoroApp(App):
 
             with Vertical(id="controls-section"):
                 yield ControlButtons()
-
-            with Center(id="settings-section"):
-                yield SettingsPanel(self._settings)
 
         yield Footer()
 
@@ -226,13 +223,8 @@ class PodomoroApp(App):
         controls = self.query_one(ControlButtons)
         controls.set_stopped()
 
-    def action_toggle_settings(self) -> None:
-        """Toggle the settings panel visibility."""
-        settings_panel = self.query_one(SettingsPanel)
-        settings_panel.toggle()
-
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        """Handle button presses."""
+        """Handle button presses from the main screen."""
         button_id = event.button.id
 
         if button_id == "start-btn":
@@ -241,17 +233,17 @@ class PodomoroApp(App):
             self.action_pause()
         elif button_id == "stop-btn":
             self.action_stop()
-        elif button_id == "save-btn":
-            self._save_settings()
-        elif button_id == "cancel-btn":
-            self._cancel_settings()
 
-    def _save_settings(self) -> None:
-        """Save the settings and apply them."""
-        settings_panel = self.query_one(SettingsPanel)
-        new_settings = settings_panel.get_settings()
+    def action_toggle_settings(self) -> None:
+        """Open the settings screen."""
+        self.push_screen(SettingsScreen(self._settings), self._on_settings_result)
 
-        # Save to file
+    def _on_settings_result(self, result: dict | None) -> None:
+        """Handle the result from the settings screen."""
+        if result is None:
+            return
+
+        new_settings = result
         save_settings(new_settings)
         self._settings = new_settings
 
@@ -271,14 +263,6 @@ class PodomoroApp(App):
         # If timer is not running, update duration for current session
         if not self._timer.is_running:
             self._reset_timer_for_new_session()
-
-        settings_panel.hide()
-
-    def _cancel_settings(self) -> None:
-        """Cancel settings changes."""
-        settings_panel = self.query_one(SettingsPanel)
-        settings_panel.update_values(self._settings)
-        settings_panel.hide()
 
 
 def run() -> None:
