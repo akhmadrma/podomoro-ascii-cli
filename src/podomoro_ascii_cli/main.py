@@ -16,6 +16,7 @@ from podomoro_ascii_cli.core import (
     load_settings,
     save_settings,
     send_notification,
+    stop_notification_sound,
 )
 from podomoro_ascii_cli.core.timer import Timer
 from podomoro_ascii_cli.widgets import (
@@ -193,6 +194,8 @@ class PodomoroApp(App):
 
     def action_start(self) -> None:
         """Start or resume the timer."""
+        stop_notification_sound()
+
         if self._timer.is_paused:
             self._timer.resume()
         else:
@@ -210,6 +213,7 @@ class PodomoroApp(App):
 
     def action_stop(self) -> None:
         """Stop the timer and reset the cycle."""
+        stop_notification_sound()
         self._timer.stop()
         self._session.reset()
 
